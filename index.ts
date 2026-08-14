@@ -20,19 +20,18 @@ interface lista {
 
 let menu: lista[] = [];
 let proxid: number = 1;
-let contid = 1;
 const addlista = (
   title: string,
   completed: boolean,
   callback: (anime: lista) => void,
 ) => {
-  const nuevoanime: lista = {
+  const nuevaTarea: lista = {
     id: proxid++,
     title: title,
     completed: completed,
   };
-  menu.push(nuevoanime);
-  callback(nuevoanime);
+  menu.push(nuevaTarea);
+  callback(nuevaTarea);
 };
 
 const listar = (callback: (lista: lista[]) => void) => {
@@ -44,32 +43,49 @@ const eliminarultimo = (
 ) => {
   if (menu.length > 0) {
     const eliminar = menu.pop()!;
-    callback(eliminar, "Anime Eliminado");
+    callback(eliminar, "Tarea Eliminado");
   } else {
-    callback(null, "no hay nada para borrar");
+    callback(null, "no hay nada para Eliminar");
   }
 };
+
+const markCompletado = (id: number) => {
+  const tareaEncon = menu.find((tarea) => tarea.id === id);
+  if (tareaEncon) {
+    tareaEncon.completed = true;
+    console.log(`tarea: ${tareaEncon.title} Completada!!! `);
+  } else {
+    console.log(`Tarea no Encontrada
+      `);
+  }
+};
+
 let opcion: string;
 do {
-  console.log("-------- Menu de Animes -------");
-  console.log("1. Agregar Anime");
-  console.log("2. Eliminar el ultimo Anime");
-  console.log("3. Listado de Animes");
-  console.log("4. Salir");
+  console.log("-------- Menu de Tareas -------");
+  console.log("1. Agregar Tarea");
+  console.log("2. Eliminar el ultima Tarea");
+  console.log("3. Listado de Tareas");
+  console.log("4. Lista de Tareas: Pendientes");
+  console.log("5. Lista de Tareas: Completadas");
+  console.log("6. Marcar Tarea -Pendiente- como -Completada-");
+  console.log("7. Salir");
 
   opcion = await rl.question("Elige una opcion: ");
   const opcionC: number = parseInt(opcion, 10);
 
   switch (opcionC) {
     case 1:
-      const titulo: string = await rl.question("Ingresa el nombre del Anime: ");
+      const titulo: string = await rl.question(
+        "Ingresa el nombre de la tarea: ",
+      );
       const estado: string = await rl.question(
         "Cual es el estado?(Pendiente o Completado): ",
       );
       const estadobool = estado.toLowerCase() === "completado";
 
       addlista(titulo, estadobool, (anime) => {
-        console.log(`anime agregado id: ${anime.id} nombre: ${anime.title}`);
+        console.log(`tarea agregado id: ${anime.id} nombre: ${anime.title}`);
       });
       break;
     case 2:
@@ -86,30 +102,70 @@ do {
         if (lista.length === 0) {
           console.log("La lista esta vacia: ");
         }
-        console.log(" Lista de Animes ");
-        for (let i = 0; i < lista.length; i++) {
-          const anime = lista[i];
-          let estadotx: string;
-          if (anime.completed === true) {
-            estadotx = "Completado";
-          } else {
-            estadotx = "Pendiente";
-          }
-          console.log(
-            `ID: ${anime.id} nombre: ${anime.title} estado: ${estadotx}`,
-          );
-        }
+        console.log(" Lista de Tareas ");
+        const listado: string[] = lista.map((tarea) => {
+          const { id, title, completed } = tarea;
+          const estado = completed ? "Completado" : "Pendiente";
+          return `id: ${id}, titulo: ${title}, estado: ${estado}`;
+        });
+        listado.forEach((linea) => console.log(linea));
       });
 
       break;
     case 4:
+      listar((lista) => {
+        if (lista.length === 0) {
+          console.log("La lista esta vacia: ");
+        }
+        const Pendientes = lista.filter((tarea) => {
+          return tarea.completed === false;
+        });
+
+        const listaPendientes: string[] = Pendientes.map((tarea) => {
+          const { id, title, completed } = tarea;
+          const estado = completed ? "Completado" : "Pendiente";
+          return `id: ${id}, titulo: ${title}, estado: ${estado}`;
+        });
+        listaPendientes.forEach((linea) => console.log(linea));
+      });
+      break;
+    case 5:
+      listar((lista) => {
+        if (lista.length === 0) {
+          console.log("La lista esta vacia: ");
+        }
+        const Completadas = lista.filter((tarea) => {
+          return tarea.completed === true;
+        });
+
+        const listaCompletadas: string[] = Completadas.map((tarea) => {
+          const { id, title, completed } = tarea;
+          const estado = completed ? "Completado" : "Pendiente";
+          return `id: ${id}, titulo: ${title}, estado: ${estado}`;
+        });
+        listaCompletadas.forEach((linea) => console.log(linea));
+      });
+      break;
+    case 6:
+      const ingresaid = await rl.question(
+        "Ingresa el Id de la tarea que quieres marcar Completado: ",
+      );
+      const id = parseInt(ingresaid, 10);
+
+      if (isNaN(id)) {
+        console.log("Introduce un ID Valido ");
+      } else {
+        markCompletado(id);
+      }
+      break;
+    case 7:
       console.log("Escogiste Salir ");
       break;
     default:
       console.log("La opcion que escogiste no existe en el listado :D");
       break;
   }
-} while (opcion !== "4");
+} while (opcion !== "7");
 
 /* let opcion: string;
 do {
